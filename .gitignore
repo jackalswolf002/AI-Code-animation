@@ -1,0 +1,5 @@
+# Ignore oversized local reference videos (>100MB GitHub file limit) and system files
+.DS_Store
+《脑内擂台》你不用打赢它们，你可以改规则。.mp4
+11月9日 (1)/
+*.mov

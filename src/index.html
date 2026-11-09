@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>粒子数反转 · 微观能级擂台 (Motion Showreel)</title>
+  <style>
+    :root {
+      --bg-obsidian: #080604;
+      --card-glass: rgba(20, 16, 11, 0.88);
+      --amber-gold: #FFD154;
+      --cyan-shield: #58F2D8;
+      --coral-red: #FF5838;
+      --text-white: #FFFDF7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-obsidian);
+      color: var(--text-white);
+      font-family: "Songti SC", "PingFang SC", "Georgia", serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .stage-wrap {
+      width: min(94vw, 1440px);
+      aspect-ratio: 16 / 9;
+      position: relative;
+      border: 1.5px solid rgba(255, 209, 84, 0.35);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.85), 0 0 40px rgba(255, 209, 84, 0.08);
+      background: var(--bg-obsidian);
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .controls {
+      width: min(94vw, 1440px);
+      margin-top: 14px;
+      background: var(--card-glass);
+      border: 1px solid rgba(255, 209, 84, 0.28);
+      border-radius: 10px;
+      padding: 12px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+    }
+    button {
+      background: rgba(255, 209, 84, 0.14);
+      color: var(--amber-gold);
+      border: 1px solid rgba(255, 209, 84, 0.5);
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    button:hover {
+      background: rgba(255, 209, 84, 0.25);
+      box-shadow: 0 0 16px rgba(255, 209, 84, 0.25);
+    }
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--cyan-shield);
+      cursor: pointer;
+    }
+    .time-readout {
+      font-variant-numeric: tabular-nums;
+      color: var(--cyan-shield);
+      font-weight: bold;
+      min-width: 125px;
+      text-align: right;
+    }
+    .shot-pills {
+      width: min(94vw, 1440px);
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .shot-pill {
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      background: rgba(16, 13, 10, 0.9);
+      border: 1px solid rgba(255, 209, 84, 0.22);
+      color: #C2B49E;
+      cursor: pointer;
+    }
+    .shot-pill.active {
+      background: rgba(88, 242, 216, 0.16);
+      color: var(--cyan-shield);
+      border-color: var(--cyan-shield);
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-wrap">
+    <canvas id="stage" width="1920" height="1080"></canvas>
+  </div>
+
+  <div class="controls">
+    <button id="playBtn">▶ 播放 / Play</button>
+    <input id="scrubber" type="range" min="0" max="56" step="0.01" value="0" />
+    <div class="time-readout" id="timeLabel">00.00 / 56.00s</div>
+  </div>
+
+  <div class="shot-pills" id="shotPills"></div>
+
+  <audio id="audioTrack" src="./audio_mix.mp3" preload="auto"></audio>
+
+  <script src="./timeline.js"></script>
+  <script src="./render.js"></script>
+  <script>
+    const canvas = document.getElementById("stage");
+    const ctx = canvas.getContext("2d");
+    const audio = document.getElementById("audioTrack");
+    const playBtn = document.getElementById("playBtn");
+    const scrubber = document.getElementById("scrubber");
+    const timeLabel = document.getElementById("timeLabel");
+    const shotPills = document.getElementById("shotPills");
+
+    scrubber.max = TIMELINE.duration;
+
+    TIMELINE.shots.forEach((shot) => {
+      const btn = document.createElement("button");
+      btn.className = "shot-pill";
+      btn.textContent = `${shot.id} · ${shot.name.split(" · ")[0]} (${shot.start.toFixed(1)}s)`;
+      btn.onclick = () => {
+        seekTo(shot.start + 0.05);
+      };
+      shotPills.appendChild(btn);
+    });
+
+    let currentTime = 0;
+    let isPlaying = false;
+    let rafId = null;
+
+    window.render = function (t) {
+      currentTime = Math.max(0, Math.min(TIMELINE.duration, t));
+      window.renderFrame(ctx, currentTime, canvas.width, canvas.height);
+      scrubber.value = currentTime;
+      timeLabel.textContent = `${currentTime.toFixed(2).padStart(5, "0")} / ${TIMELINE.duration.toFixed(2)}s`;
+      const pills = shotPills.querySelectorAll(".shot-pill");
+      TIMELINE.shots.forEach((s, idx) => {
+        if (pills[idx]) {
+          pills[idx].classList.toggle("active", currentTime >= s.start && currentTime <= s.end);
+        }
+      });
+    };
+
+    function seekTo(t) {
+      audio.currentTime = Math.min(audio.duration || TIMELINE.duration, t);
+      window.render(t);
+    }
+
+    function tick() {
+      if (!isPlaying) return;
+      if (!audio.paused) {
+        currentTime = audio.currentTime;
+      } else {
+        currentTime += 1 / 60;
+      }
+      if (currentTime >= TIMELINE.duration) {
+        isPlaying = false;
+        audio.pause();
+        playBtn.textContent = "▶ 重新播放 / Replay";
+        window.render(TIMELINE.duration - 0.05);
+        return;
+      }
+      window.render(currentTime);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    playBtn.addEventListener("click", () => {
+      if (isPlaying) {
+        isPlaying = false;
+        audio.pause();
+        playBtn.textContent = "▶ 播放 / Play";
+        if (rafId) cancelAnimationFrame(rafId);
+      } else {
+        if (currentTime >= TIMELINE.duration - 0.1) {
+          seekTo(0);
+        }
+        isPlaying = true;
+        audio.play().catch(() => {});
+        playBtn.textContent = "⏸ 暂停 / Pause";
+        rafId = requestAnimationFrame(tick);
+      }
+    });
+
+    scrubber.addEventListener("input", (e) => {
+      const t = parseFloat(e.target.value);
+      seekTo(t);
+    });
+
+    window.render(44.5);
+  </script>
+</body>
+</html>
