@@ -4,14 +4,14 @@
 
 ## 目录结构
 
-* **`v1-grand-budapest-style/` — 第一套：《布达佩斯大饭店》复古对称美学版**
+* **`v1-grand-budapest-style/` — 第一套
   * [`粒子数反转_布达佩斯风格.mp4`](./v1-grand-budapest-style/粒子数反转_布达佩斯风格.mp4)：1920×1080 30fps 成片
   * [`index.html`](./v1-grand-budapest-style/index.html)：复古鎏金主题交互式网页预览播放器（暴露 `window.render(t)`）
   * [`timeline.js`](./v1-grand-budapest-style/timeline.js)：门德尔甜点粉/紫罗兰/黄铜金配色与 9 镜头元素丝滑形变（Match-Cut）时间轴
   * [`render.js`](./v1-grand-budapest-style/render.js)：三层复古饭店横截面、玻尔兹曼曲线变形水银温度计、水银球弹跳化作太阳光子、气动能量泵与螺旋滑梯动画引擎
   * [`build_audio.py`](./v1-grand-budapest-style/build_audio.py) & [`audio_mix.mp3`](./v1-grand-budapest-style/audio_mix.mp3)：巴拉莱卡琴/拨弦古钢琴轻快配乐 + 粒子音效与旁白自动闪避混音
 
-* **`v2-quantum-arena-style/` — 第二套：《脑内擂台》暗黑曜石与霓虹辉光版（精修版）**
+* **`v2-quantum-arena-style/` — 第二套
   * [`粒子数反转_脑内擂台风格.mp4`](./v2-quantum-arena-style/粒子数反转_脑内擂台风格.mp4)：1920×1080 30fps 精修成片
   * [`index.html`](./v2-quantum-arena-style/index.html)：暗黑曜石主题交互式网页预览播放器（暴露 `window.render(t)`）
   * [`timeline.js`](./v2-quantum-arena-style/timeline.js)：暗黑曜石/琥珀金/青绿护盾/赤红尖刺配色、连续摄影机运镜与分段高亮字幕时间轴
